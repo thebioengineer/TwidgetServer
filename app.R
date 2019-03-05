@@ -20,7 +20,11 @@ raw_html<-function(x){
 }
 
 shinyApp(
-  ui = fluidPage(uiOutput("iframe"),title = "TwidgetServer",style='height: 100%;margin: 0;width:100%'),
+  ui = bootstrapPage(
+    tags$html(style="width: 100%;height: 100%;position: fixed;outline: none;",
+    tags$body(style="width: 100%;height: 100%;position: fixed;outline: none;",
+    uiOutput("iframe",style="width: 100%;height: 100%;position: fixed;outline: none;"),
+    title = "TwidgetServer",style='height: 100%;margin: 0;width:100%'))),
   server = function(input, output, session) {
     #getting URL
     url <- reactiveVal()
@@ -32,11 +36,11 @@ shinyApp(
         }else{
           query<-names(query)
         }
-        if(validURL(query)){
+        # if(validURL(query)){
           url(query)
-        }else{
-          url("invalid_URL")
-        }
+        # }else{
+        #   url("invalid_URL")
+        # }
       }
     })
     
@@ -48,16 +52,21 @@ shinyApp(
     })
     
     output$iframe<-renderUI({
-      if(is.null(url()) | url()=="invalid_URL"){
+      if( any(is.null(url()),
+              length(url())==0,
+              url()=="invalid_URL")){
         tags$div(
           tags$p("Enter github URL"),
           textInput("ManualgithubURL",label = "Github URL",value = ""),
           actionButton("submitGHURL",label = "Submit")
         )
       }else{
-        url_html<-raw_html(url())
-        tagList(tags$head(HTML(url_html$head)),HTML(url_html$body))
-        # tags$link(rel='import',href=url())
+        # url_html<-raw_html(url())
+        # tagList(tags$head(HTML(url_html$head)),HTML(url_html$body))
+        # # tags$link(rel='import',href=url())
+        # tags$iframe(src=paste0("http://htmlpreview.github.io/?",url()))
+        tags$iframe(src=url(),style='height: 100%;margin: 0;width:100%')
+        
       }
     })
   }
